@@ -22,7 +22,7 @@ pub enum Commands {
         group: Option<String>,
 
         #[clap(value_parser)]
-        description: Vec<String>,
+        description: String,
     },
 
     #[clap(alias = "ls")]
@@ -30,11 +30,24 @@ pub enum Commands {
 
     Toggle {
         #[clap(value_parser)]
-        line: usize,
+        task_id: usize,
     },
 
     Remove {
         #[clap(value_parser)]
-        line: usize,
+        task_id: usize,
+    },
+
+    Edit {
+        #[clap(value_parser)]
+        task_id: usize,
+
+        #[clap(value_parser)]
+        description: String,
+    },
+
+    Search {
+        #[clap(value_parser)]
+        partial_description: String,
     },
 }

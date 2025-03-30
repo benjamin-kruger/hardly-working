@@ -4,7 +4,7 @@ mod task;
 
 use clap::Parser;
 use cli::Cli;
-use colored::*;
+use colored::Colorize;
 use std::path::PathBuf;
 
 fn main() {
@@ -40,24 +40,49 @@ fn main() {
             }
         }
         Some(cli::Commands::Add { description, group }) => {
-            let description = description.join(" ");
             task_list.add_task(description.clone(), group.clone());
             task_list.list_tasks();
         }
         Some(cli::Commands::List) => {
             task_list.list_tasks();
         }
-        Some(cli::Commands::Toggle { line }) => match task_list.toggle_task(*line) {
+        Some(cli::Commands::Toggle { task_id }) => match task_list.toggle_task(*task_id) {
             Ok(_) => {
                 task_list.list_tasks();
             }
             Err(e) => eprintln!("{}: {}", "Error".red().bold(), e),
         },
-        Some(cli::Commands::Remove { line }) => match task_list.remove_task(*line) {
+        Some(cli::Commands::Remove { task_id }) => match task_list.remove_task(*task_id) {
             Ok(_) => {
                 task_list.list_tasks();
             }
             Err(e) => eprintln!("{}: {}", "Error".red().bold(), e),
+        },
+        Some(cli::Commands::Search {
+            partial_description,
+        }) => {
+            let results = task_list.search_tasks(&partial_description);
+
+            if results.is_empty() {
+                println!(
+                    "{}: No tasks found matching '{}'",
+                    "Info".blue().bold(),
+                    partial_description
+                );
+                return;
+            }
+            for (index, task) in results {
+                task_list.display_task(index, task);
+            }
+        }
+        Some(cli::Commands::Edit {
+            task_id,
+            description,
+        }) => match task_list.edit_task(*task_id, description.clone()) {
+            Ok(_) => {
+                task_list.list_tasks();
+            }
+            Err(e) => eprintln!("{}: {}", "Error".to_string().red().bold(), e),
         },
         _ => {}
     }
@@ -68,6 +93,7 @@ fn main() {
         Some(cli::Commands::Add { .. })
             | Some(cli::Commands::Toggle { .. })
             | Some(cli::Commands::Remove { .. })
+            | Some(cli::Commands::Edit { .. })
     ) {
         if let Err(e) = task_list.save(&config) {
             eprintln!("{}: Failed to save tasks: {}", "Error".red().bold(), e);

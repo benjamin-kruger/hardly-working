@@ -1,5 +1,5 @@
 use crate::config::TodoListLocation;
-use colored::*;
+use colored::Colorize;
 use std::collections::HashMap;
 use std::fs::{self, File};
 use std::io::{self, Read, Write};
@@ -83,7 +83,30 @@ impl TodoList {
         }
     }
 
-    fn display_task(&self, index: usize, task: &Task) {
+    pub fn edit_task(&mut self, task_id: usize, new_description: String) -> Result<(), String> {
+        if task_id == 0 || task_id > self.tasks.len() {
+            return Err(format!("Task {} does not exist", task_id));
+        }
+
+        let task = &mut self.tasks[task_id - 1];
+        task.description = new_description;
+
+        Ok(())
+    }
+
+    pub fn search_tasks(&self, partial_description: &str) -> Vec<(usize, &Task)> {
+        self.tasks
+            .iter()
+            .enumerate()
+            .filter(|(_, task)| {
+                task.description
+                    .to_lowercase()
+                    .contains(&partial_description.to_lowercase())
+            })
+            .collect()
+    }
+
+    pub fn display_task(&self, index: usize, task: &Task) {
         let line_num = format!("{}:", index + 1);
         let checkbox = if task.completed {
             "[x]".green().bold()

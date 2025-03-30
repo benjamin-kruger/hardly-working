@@ -52,8 +52,8 @@ impl TodoListLocation {
     pub fn save(&self) -> io::Result<()> {
         let config_path = get_config_file_path();
 
-        if let Some(parent) = config_path.parent() {
-            fs::create_dir_all(parent)?;
+        if let Some(parent_path) = config_path.parent() {
+            fs::create_dir_all(parent_path)?;
         }
 
         let file = File::create(config_path)?;

@@ -4,8 +4,8 @@ Working hard or hardly working - A todo list CLI
 
 ## Features
 
-- Add, toggle, and remove tasks
-- Colorful terminal output
+- Add, toggle, edit, and remove tasks
+- Search and group tasks
 - Markdown-based storage format
 - Configurable todo list file location
 
@@ -23,7 +23,7 @@ cp target/release/hw ~/.cargo/bin/hw
 ## Usage
 
 ```bash
-# Configure task file location
+# Configure task file location (by default at ~/.config/hw/config.json)
 hw config --file-path ~/Documents/tasks.md
 
 # Show current configuration

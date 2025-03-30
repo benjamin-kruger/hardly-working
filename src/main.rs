@@ -10,7 +10,7 @@ use std::path::PathBuf;
 fn main() {
     let cli = Cli::parse();
     let mut config = config::TodoListLocation::load();
-    let mut task_list = task::TaskList::load(&config);
+    let mut task_list = task::TodoList::load(&config);
 
     match &cli.command {
         Some(cli::Commands::Config { file_path, show }) => {
@@ -42,12 +42,6 @@ fn main() {
         Some(cli::Commands::Add { description, group }) => {
             let description = description.join(" ");
             task_list.add_task(description.clone(), group.clone());
-
-            println!("{} {}", "Added task:".green(), description);
-            if let Some(group_name) = group {
-                println!("{} {}", "In group:".green(), group_name);
-            }
-            println!();
             task_list.list_tasks();
         }
         Some(cli::Commands::List) => {
@@ -55,21 +49,12 @@ fn main() {
         }
         Some(cli::Commands::Toggle { line }) => match task_list.toggle_task(*line) {
             Ok(_) => {
-                let status = if task_list.tasks[*line - 1].completed {
-                    "Completed".green()
-                } else {
-                    "Uncompleted".blue()
-                };
-                println!("{} task at line {}", status, line);
-                println!();
                 task_list.list_tasks();
             }
             Err(e) => eprintln!("{}: {}", "Error".red().bold(), e),
         },
         Some(cli::Commands::Remove { line }) => match task_list.remove_task(*line) {
             Ok(_) => {
-                println!("{} task {}", "Removed".yellow(), line);
-                println!();
                 task_list.list_tasks();
             }
             Err(e) => eprintln!("{}: {}", "Error".red().bold(), e),

@@ -11,11 +11,11 @@ pub struct Task {
     pub group: Option<String>,
 }
 
-pub struct TaskList {
+pub struct TodoList {
     pub tasks: Vec<Task>,
 }
 
-impl TaskList {
+impl TodoList {
     pub fn new() -> Self {
         Self { tasks: Vec::new() }
     }
@@ -28,20 +28,20 @@ impl TaskList {
         });
     }
 
-    pub fn toggle_task(&mut self, line: usize) -> Result<(), String> {
-        if line == 0 || line > self.tasks.len() {
-            return Err(format!("Task {} does not exist", line));
+    pub fn toggle_task(&mut self, task_id: usize) -> Result<(), String> {
+        if task_id == 0 || task_id > self.tasks.len() {
+            return Err(format!("Task {} does not exist", task_id));
         }
-        let task = &mut self.tasks[line - 1];
+        let task = &mut self.tasks[task_id - 1];
         task.completed = !task.completed;
         Ok(())
     }
 
-    pub fn remove_task(&mut self, line: usize) -> Result<(), String> {
-        if line == 0 || line > self.tasks.len() {
-            return Err(format!("Task {} does not exist", line));
+    pub fn remove_task(&mut self, task_id: usize) -> Result<(), String> {
+        if task_id == 0 || task_id > self.tasks.len() {
+            return Err(format!("Task {} does not exist", task_id));
         }
-        self.tasks.remove(line - 1);
+        self.tasks.remove(task_id - 1);
         Ok(())
     }
 
@@ -56,21 +56,21 @@ impl TaskList {
 
         println!("{}", "TODO List:".bold().underline());
 
-        let mut grouped: HashMap<Option<String>, Vec<(usize, &Task)>> = HashMap::new();
-        for (i, task) in self.tasks.iter().enumerate() {
-            grouped
+        let mut tasks_by_group: HashMap<Option<String>, Vec<(usize, &Task)>> = HashMap::new();
+        for (task_id, task) in self.tasks.iter().enumerate() {
+            tasks_by_group
                 .entry(task.group.clone())
                 .or_default()
-                .push((i, task));
+                .push((task_id, task));
         }
 
-        if let Some(tasks) = grouped.get(&None) {
+        if let Some(tasks) = tasks_by_group.get(&None) {
             for &(i, task) in tasks {
                 self.display_task(i, task);
             }
         }
 
-        let mut groups: Vec<_> = grouped.iter().filter(|(k, _)| k.is_some()).collect();
+        let mut groups: Vec<_> = tasks_by_group.iter().filter(|(k, _)| k.is_some()).collect();
         groups.sort_by(|(a, _), (b, _)| a.cmp(b));
 
         for (group, tasks) in groups {
@@ -91,7 +91,7 @@ impl TaskList {
             "[ ]".red()
         };
         let description = if task.completed {
-            task.description.green()
+            task.description.green().strikethrough()
         } else {
             task.description.white()
         };
@@ -99,38 +99,40 @@ impl TaskList {
     }
 
     fn to_markdown(&self) -> String {
-        let mut markdown = String::new();
+        let mut content = String::new();
 
-        markdown.push_str("# Hardly Working TODO List\n\n");
+        content.push_str("# Hardly Working TODO List\n\n");
 
-        let mut grouped: HashMap<Option<String>, Vec<&Task>> = HashMap::new();
+        let mut tasks_by_group: HashMap<Option<String>, Vec<&Task>> = HashMap::new();
         for task in &self.tasks {
-            grouped.entry(task.group.clone()).or_default().push(task);
+            tasks_by_group
+                .entry(task.group.clone())
+                .or_default()
+                .push(task);
         }
 
-        if let Some(tasks) = grouped.get(&None) {
+        if let Some(tasks) = tasks_by_group.get(&None) {
             for task in tasks {
                 let checkbox = if task.completed { "[x]" } else { "[ ]" };
-                markdown.push_str(&format!("- {} {}\n", checkbox, task.description));
+                content.push_str(&format!("- {} {}\n", checkbox, task.description));
             }
-            markdown.push('\n');
+            content.push('\n');
         }
 
-        let mut groups: Vec<_> = grouped.iter().filter(|(k, _)| k.is_some()).collect();
+        let mut groups: Vec<_> = tasks_by_group.iter().filter(|(k, _)| k.is_some()).collect();
         groups.sort_by(|(a, _), (b, _)| a.cmp(b));
 
         for (group, tasks) in groups {
             if let Some(group_name) = group {
-                markdown.push_str(&format!("## {}\n", group_name));
+                content.push_str(&format!("## {}\n\n", group_name));
                 for task in tasks {
                     let checkbox = if task.completed { "[x]" } else { "[ ]" };
-                    markdown.push_str(&format!("- {} {}\n", checkbox, task.description));
+                    content.push_str(&format!("- {} {}\n", checkbox, task.description));
                 }
-                markdown.push('\n');
+                content.push('\n');
             }
         }
-
-        markdown
+        content
     }
 
     fn from_markdown(content: &str) -> Self {
@@ -166,27 +168,27 @@ impl TaskList {
         Self { tasks }
     }
 
-    pub fn load(config: &TodoListLocation) -> Self {
-        let path = PathBuf::from(&config.file_path);
+    pub fn load(todo_list_location: &TodoListLocation) -> Self {
+        let path = PathBuf::from(&todo_list_location.file_path);
         let mut file = match File::open(&path) {
             Ok(file) => file,
-            Err(_) => return TaskList::new(),
+            Err(_) => return TodoList::new(),
         };
         let mut contents = String::new();
         if file.read_to_string(&mut contents).is_err() {
-            return TaskList::new();
+            return TodoList::new();
         }
-        TaskList::from_markdown(&contents)
+        TodoList::from_markdown(&contents)
     }
 
-    pub fn save(&self, config: &TodoListLocation) -> io::Result<()> {
-        let path = PathBuf::from(&config.file_path);
-        if let Some(parent) = path.parent() {
-            fs::create_dir_all(parent)?;
+    pub fn save(&self, todo_list_location: &TodoListLocation) -> io::Result<()> {
+        let path = PathBuf::from(&todo_list_location.file_path);
+        if let Some(parent_path) = path.parent() {
+            fs::create_dir_all(parent_path)?;
         }
-        let markdown = self.to_markdown();
+        let content = self.to_markdown();
         let mut file = File::create(path)?;
-        file.write_all(markdown.as_bytes())?;
+        file.write_all(content.as_bytes())?;
         Ok(())
     }
 }

@@ -1,6 +1,6 @@
 # Hardly Working - Another todo list CLI
 
-Working hard or hardly working??? - A simple todo list CLI
+Working hard or hardly working - A todo list CLI
 
 ## Features
 

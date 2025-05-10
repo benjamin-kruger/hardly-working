@@ -40,6 +40,9 @@ hw toggle 1
 
 # Remove a task
 hw remove 1
+
+# Clear all completed tasks
+hw clear
 ```
 
 ## Storage
@@ -51,7 +54,7 @@ Tasks are stored in a simple Markdown file with checkbox syntax:
 - [x] Completed task
 ```
 
-By default, tasks are stored in `~/todo.md`, but you can change this with the `config` command.
+By default, tasks are stored in `~/todo.md`. To se a preferred path, use `hw config`.
 
 ## License
 

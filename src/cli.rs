@@ -50,4 +50,6 @@ pub enum Commands {
         #[clap(value_parser)]
         partial_description: String,
     },
+    #[clap(alias = "rm")]
+    Clear {},
 }

@@ -1,10 +1,9 @@
-mod cli;
-mod config;
-mod task;
-
 use clap::Parser;
 use cli::Cli;
 use colored::Colorize;
+use hw::cli;
+use hw::config;
+use hw::task;
 use std::path::PathBuf;
 
 fn main() {
@@ -41,27 +40,22 @@ fn main() {
         }
         Some(cli::Commands::Add { description, group }) => {
             task_list.add_task(description.clone(), group.clone());
-            task_list.list_tasks();
         }
         Some(cli::Commands::List) => {
             task_list.list_tasks();
         }
         Some(cli::Commands::Toggle { task_id }) => match task_list.toggle_task(*task_id) {
-            Ok(_) => {
-                task_list.list_tasks();
-            }
+            Ok(_) => {}
             Err(e) => eprintln!("{}: {}", "Error".red().bold(), e),
         },
         Some(cli::Commands::Remove { task_id }) => match task_list.remove_task(*task_id) {
-            Ok(_) => {
-                task_list.list_tasks();
-            }
+            Ok(_) => {}
             Err(e) => eprintln!("{}: {}", "Error".red().bold(), e),
         },
         Some(cli::Commands::Search {
             partial_description,
         }) => {
-            let results = task_list.search_tasks(&partial_description);
+            let results = task_list.search_tasks(partial_description);
 
             if results.is_empty() {
                 println!(
@@ -84,6 +78,9 @@ fn main() {
             }
             Err(e) => eprintln!("{}: {}", "Error".to_string().red().bold(), e),
         },
+        Some(cli::Commands::Clear {}) => {
+            task_list.clear();
+        }
         _ => {}
     }
 
@@ -94,6 +91,7 @@ fn main() {
             | Some(cli::Commands::Toggle { .. })
             | Some(cli::Commands::Remove { .. })
             | Some(cli::Commands::Edit { .. })
+            | Some(cli::Commands::Clear { .. })
     ) {
         if let Err(e) = task_list.save(&config) {
             eprintln!("{}: Failed to save tasks: {}", "Error".red().bold(), e);

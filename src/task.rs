@@ -45,6 +45,25 @@ impl TodoList {
         Ok(())
     }
 
+    pub fn clear(&mut self) {
+        self.tasks.retain(|task| !task.completed);
+    }
+
+    fn display_task_aligned(&self, index: usize, task: &Task, width: usize) {
+        let line_num = format!("{:>width$}:", index + 1, width = width);
+        let checkbox = if task.completed {
+            "[x]".green().bold()
+        } else {
+            "[ ]".red()
+        };
+        let description = if task.completed {
+            task.description.green().strikethrough()
+        } else {
+            task.description.white()
+        };
+        println!("{} {} {}", line_num.blue().bold(), checkbox, description);
+    }
+
     pub fn list_tasks(&self) {
         if self.tasks.is_empty() {
             println!(
@@ -54,7 +73,7 @@ impl TodoList {
             return;
         }
 
-        println!("{}", "TODO List:".bold().underline());
+        let max_index_width = self.tasks.len().to_string().len();
 
         let mut tasks_by_group: HashMap<Option<String>, Vec<(usize, &Task)>> = HashMap::new();
         for (task_id, task) in self.tasks.iter().enumerate() {
@@ -66,7 +85,7 @@ impl TodoList {
 
         if let Some(tasks) = tasks_by_group.get(&None) {
             for &(i, task) in tasks {
-                self.display_task(i, task);
+                self.display_task_aligned(i, task, max_index_width);
             }
         }
 
@@ -77,7 +96,7 @@ impl TodoList {
             if let Some(group_name) = group {
                 println!("\n{}", group_name.blue().bold().underline());
                 for &(i, task) in tasks {
-                    self.display_task(i, task);
+                    self.display_task_aligned(i, task, max_index_width);
                 }
             }
         }
@@ -121,7 +140,7 @@ impl TodoList {
         println!("{} {} {}", line_num.blue().bold(), checkbox, description);
     }
 
-    fn to_markdown(&self) -> String {
+    pub fn to_markdown(&self) -> String {
         let mut content = String::new();
 
         content.push_str("# Hardly Working TODO List\n\n");
@@ -158,7 +177,7 @@ impl TodoList {
         content
     }
 
-    fn from_markdown(content: &str) -> Self {
+    pub fn from_markdown(content: &str) -> Self {
         let mut tasks = Vec::new();
         let mut current_group: Option<String> = None;
 

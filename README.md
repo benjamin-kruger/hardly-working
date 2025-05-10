@@ -14,10 +14,7 @@ Working hard or hardly working - A todo list CLI
 Build from source:
 
 ```bash
-git clone https://github.com/benjamin-kruger/hardly-working
-cd hardly-working
-cargo build --release
-cp target/release/hw ~/.cargo/bin/hw
+cargo install hardly-working
 ```
 
 ## Usage

@@ -2,7 +2,7 @@
 name = "hw"
 version = "0.1.0"
 edition = "2021"
-authors = ["Benjamin Kruger <bskruger2002@gmail.com>"]
+authors = ["Benjamin Kruger <logins@benjamin-kruger.com>"]
 description = "Working hard or hardly working - A simple todo list CLI"
 readme = "README.md"
 license = "MIT"

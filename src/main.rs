@@ -1,9 +1,9 @@
 use clap::Parser;
 use cli::Cli;
 use colored::Colorize;
-use hw::cli;
-use hw::config;
-use hw::task;
+use hardly_working::cli;
+use hardly_working::config;
+use hardly_working::task;
 use std::path::PathBuf;
 
 fn main() {

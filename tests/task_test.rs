@@ -1,4 +1,4 @@
-use hw::task::TodoList;
+use hardly_working::task::TodoList;
 
 #[test]
 fn test_add_task() {

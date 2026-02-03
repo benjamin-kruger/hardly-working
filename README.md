@@ -1,1 +1,1 @@
-# This project has moved to [a self hosted Forgejo instance](https://git.benjamin-kruger.com/benjamin-kruger/hardly-working)
+# This project has moved to [Forgejo](https://git.benjamin-kruger.com/benjamin-kruger/hardly-working)
